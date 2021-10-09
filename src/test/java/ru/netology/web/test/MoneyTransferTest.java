@@ -1,9 +1,6 @@
 package ru.netology.web.test;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import ru.netology.web.data.DataHelper;
 import ru.netology.web.page.DashboardPage;
 import ru.netology.web.page.LoginPageV2;
@@ -124,8 +121,7 @@ class MoneyTransferTest {
     }
 
 
-
-/*    @Test
+    @Test
     @DisplayName("Transfer don't success because sum more than balance in card")
     void shouldDoNotDoneTransferWithInvalidSum() {
         var loginPage = new LoginPageV2();
@@ -138,13 +134,12 @@ class MoneyTransferTest {
         var secondCardBalance = dashboardPage.getCardBalance(DataHelper.getSecondCard());
         dashboardPage.FirstCardTransfer();
         var transferPage = new TransferPage();
-        transferPage.CleanFields();
         var transferSum = DataHelper.getSumMoreThanBalance(secondCardBalance);
         var topUpFirstCard = transferPage.Transfer(transferSum);
         var actualSecondCardBalance = dashboardPage.getCardBalance(DataHelper.getSecondCard());
-        assertFalse(actualSecondCardBalance > 0);
+        Assertions.assertFalse(actualSecondCardBalance > 0);
         assertEquals(secondCardBalance, actualSecondCardBalance);
     }
- */
+
 }
 
