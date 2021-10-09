@@ -1,8 +1,8 @@
 package ru.netology.web.test;
 
-import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.netology.web.data.DataHelper;
 import ru.netology.web.page.DashboardPage;
@@ -11,6 +11,7 @@ import ru.netology.web.page.TransferPage;
 
 import static com.codeborne.selenide.Selenide.closeWindow;
 import static com.codeborne.selenide.Selenide.open;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MoneyTransferTest {
 
@@ -25,20 +26,125 @@ class MoneyTransferTest {
     }
 
     @Test
-    void shouldTransferMoneyBetweenOwnCardsV2() {
+    @DisplayName("Transfer to the first card")
+    void shouldDoneTransferToFirstCard() {
         var loginPage = new LoginPageV2();
         var authInfo = DataHelper.getAuthInfo();
         var verificationPage = loginPage.validLogin(authInfo);
         var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
         verificationPage.validVerify(verificationCode);
-        var dashBoardPage = new DashboardPage();
-        var balanceFirstCard = dashBoardPage.getCardBalance(DataHelper.getFirstCard());
-        var balanceSecondCard = dashBoardPage.getCardBalance(DataHelper.getSecondCard());
-        var transferPage = dashBoardPage.TopUpFirstCard();
-        var sumForTopUp = DataHelper.getSumForTopUpFirstCard();
-        var topUpFirstCard = transferPage.TopUpFirstCard(sumForTopUp);
-        var dsfsdf = dashBoardPage.getCardBalance(DataHelper.getFirstCard());
-
+        var dashboardPage = new DashboardPage();
+//        Получаем баланс карт до начала перевода для получения суммы перевода
+        var firstCardBalance = dashboardPage.getCardBalance(DataHelper.getFirstCard());
+        var secondCardBalance = dashboardPage.getCardBalance(DataHelper.getSecondCard());
+        dashboardPage.FirstCardTransfer();
+        var transferPage = new TransferPage();
+//        Получаем сумму перевода для сравнения ожидаемого и фактического результата
+        var transferSum = DataHelper.getValidSum(secondCardBalance);
+//        Данный метод не используется в тесте из-за того, что он заполняет поля перевода и кликает на кнопку
+        var topUpFirstCard = transferPage.Transfer(transferSum);
+//        Получаем ожидаемый результат
+        var expectedFirstCardBalance = firstCardBalance + transferSum;
+        var expectedSecondCardBalance = secondCardBalance - transferSum;
+//        Получаем фактический результат на дашборде
+        var actualFirstCardBalance = dashboardPage.getCardBalance(DataHelper.getFirstCard());
+        var actualSecondCardBalance = dashboardPage.getCardBalance(DataHelper.getSecondCard());
+//        Сравниваем ожидаемый и фактический результат
+        assertEquals(expectedFirstCardBalance, actualFirstCardBalance);
+        assertEquals(expectedSecondCardBalance, actualSecondCardBalance);
     }
+
+    @Test
+    @DisplayName("Transfer to the second card")
+    void shouldDoneTransferToSecondCard() {
+        var loginPage = new LoginPageV2();
+        var authInfo = DataHelper.getAuthInfo();
+        var verificationPage = loginPage.validLogin(authInfo);
+        var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
+        verificationPage.validVerify(verificationCode);
+        var dashboardPage = new DashboardPage();
+        var firstCardBalance = dashboardPage.getCardBalance(DataHelper.getFirstCard());
+        var secondCardBalance = dashboardPage.getCardBalance(DataHelper.getSecondCard());
+        dashboardPage.SecondCardTransfer();
+        var transferPage = new TransferPage();
+        var transferSum = DataHelper.getValidSum(firstCardBalance);
+        var topUpSecondCard = transferPage.Transfer(transferSum);
+        var expectedFirstCardBalance = firstCardBalance - transferSum;
+        var expectedSecondCardBalance = secondCardBalance + transferSum;
+        var actualFirstCardBalance = dashboardPage.getCardBalance(DataHelper.getFirstCard());
+        var actualSecondCardBalance = dashboardPage.getCardBalance(DataHelper.getSecondCard());
+        assertEquals(expectedFirstCardBalance, actualFirstCardBalance);
+        assertEquals(expectedSecondCardBalance, actualSecondCardBalance);
+    }
+
+    @Test
+    @DisplayName("Sum to the field do not be below zero")
+//    В данном тесте мы проверяем возможность перевода отрицательной суммы для увеличения баланса
+//    карты, с которой совершается перевод
+    void shouldDoNotSetTransferSumBelowZero() {
+        var loginPage = new LoginPageV2();
+        var authInfo = DataHelper.getAuthInfo();
+        var verificationPage = loginPage.validLogin(authInfo);
+        var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
+        verificationPage.validVerify(verificationCode);
+        var dashboardPage = new DashboardPage();
+        var firstCardBalance = dashboardPage.getCardBalance(DataHelper.getFirstCard());
+        var secondCardBalance = dashboardPage.getCardBalance(DataHelper.getSecondCard());
+        dashboardPage.SecondCardTransfer();
+        var transferPage = new TransferPage();
+        var transferSum = DataHelper.getSumBelowZero(firstCardBalance);
+        var topUpSecondCard = transferPage.Transfer(transferSum);
+//        Знаки операций сложения и вычитания инвертированны потому, что "+" на "-" дает "-", а "-" на "-" дает "+"
+        var expectedFirstCardBalance = firstCardBalance + transferSum;
+        var expectedSecondCardBalance = secondCardBalance - transferSum;
+//        В случае, если перевод отрицательной суммы возможен, то баланс первой карты увеличится, а второй уменьшится
+//        и тест упадёт
+        var actualFirstCardBalance = dashboardPage.getCardBalance(DataHelper.getFirstCard());
+        var actualSecondCardBalance = dashboardPage.getCardBalance(DataHelper.getSecondCard());
+        assertEquals(expectedFirstCardBalance, actualFirstCardBalance);
+        assertEquals(expectedSecondCardBalance, actualSecondCardBalance);
+    }
+
+    @Test
+    @DisplayName("Transfer don't success because invalid card number")
+    void shouldBeErrorBecauseOfInvalidCard() {
+        var loginPage = new LoginPageV2();
+        var authInfo = DataHelper.getAuthInfo();
+        var verificationPage = loginPage.validLogin(authInfo);
+        var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
+        verificationPage.validVerify(verificationCode);
+        var dashboardPage = new DashboardPage();
+//        Узнаём баланс карты для того, чтобы в Transfer page была возможность ввести сумму
+        var firstCardBalance = dashboardPage.getCardBalance(DataHelper.getFirstCard());
+        dashboardPage.FirstCardTransfer();
+        var transferPage = new TransferPage();
+        var transferSum = DataHelper.getValidSum(firstCardBalance);
+//        Берем некорректный номер карты для получения уведомления о невозможности перевода с этой карты
+        var topUpSecondCard = transferPage.InvalidFromCardNumber(transferSum);
+    }
+
+
+
+/*    @Test
+    @DisplayName("Transfer don't success because sum more than balance in card")
+    void shouldDoNotDoneTransferWithInvalidSum() {
+        var loginPage = new LoginPageV2();
+        var authInfo = DataHelper.getAuthInfo();
+        var verificationPage = loginPage.validLogin(authInfo);
+        var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
+        verificationPage.validVerify(verificationCode);
+        var dashboardPage = new DashboardPage();
+        var firstCardBalance = dashboardPage.getCardBalance(DataHelper.getFirstCard());
+        var secondCardBalance = dashboardPage.getCardBalance(DataHelper.getSecondCard());
+        dashboardPage.FirstCardTransfer();
+        var transferPage = new TransferPage();
+        transferPage.CleanFields();
+        var transferSum = DataHelper.getSumMoreThanBalance(secondCardBalance);
+        var topUpFirstCard = transferPage.Transfer(transferSum);
+        var actualSecondCardBalance = dashboardPage.getCardBalance(DataHelper.getSecondCard());
+        assertFalse(actualSecondCardBalance > 0);
+        assertEquals(secondCardBalance, actualSecondCardBalance);
+    }
+ */
 }
 

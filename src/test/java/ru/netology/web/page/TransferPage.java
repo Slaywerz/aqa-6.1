@@ -6,13 +6,11 @@ import ru.netology.web.data.DataHelper;
 
 import java.util.Objects;
 
-import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.$;
 
 public class TransferPage {
-    //    private final ElementsCollection cardsBalance = $$(".list__item");
 
-    private final SelenideElement transferHeading = $(byText("Пополнение карты"));
+    private final SelenideElement transferHeading = $("[data-test-id=amount] input");
 
     public TransferPage() {
         transferHeading.shouldBe(Condition.visible);
@@ -24,9 +22,9 @@ public class TransferPage {
     private final SelenideElement to = $("[data-test-id=to] input");
 
 
-    public DashboardPage TopUp(DataHelper.RandomSum randomSum) {
-        amount.setValue(String.valueOf(randomSum.getSum()));
-        if (to.getAttribute("value").contains("0001")==true) {
+    public DashboardPage Transfer(int randomSum) {
+        amount.setValue(String.valueOf(randomSum));
+        if ((Objects.requireNonNull(to.getAttribute("value"))).contains("0001")) {
             from.setValue(DataHelper.getSecondCard().getCardNumber());
         } else
             from.setValue(DataHelper.getFirstCard().getCardNumber());
@@ -34,11 +32,12 @@ public class TransferPage {
         return new DashboardPage();
     }
 
-    public DashboardPage TopUpFirstCard(DataHelper.RandomSum randomSum) {
-        from.setValue(DataHelper.getSecondCard().getCardNumber());
-        amount.setValue(String.valueOf(randomSum.getSum()));
-        transferButton.click();
-        return new DashboardPage();
-    }
+    private final SelenideElement errorNotification = $("[data-test-id='error-notification']");
 
+    public SelenideElement InvalidFromCardNumber(int randomSum) {
+        amount.setValue(String.valueOf(randomSum));
+        from.setValue(DataHelper.getInvalidCard().getCardNumber());
+        transferButton.click();
+        return errorNotification.shouldBe(Condition.visible);
+    }
 }
