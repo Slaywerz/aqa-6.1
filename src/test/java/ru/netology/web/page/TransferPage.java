@@ -2,9 +2,6 @@ package ru.netology.web.page;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
-import ru.netology.web.data.DataHelper;
-
-import java.util.Objects;
 
 import static com.codeborne.selenide.Selenide.$;
 
@@ -19,25 +16,19 @@ public class TransferPage {
     private final SelenideElement amount = $("[data-test-id=amount] input");
     private final SelenideElement from = $("[data-test-id=from] input");
     private final SelenideElement transferButton = $("[data-test-id=action-transfer]");
-    private final SelenideElement to = $("[data-test-id=to] input");
 
 
-    public DashboardPage Transfer(int randomSum) {
+    public DashboardPage transfer(int randomSum, String cardNumber) {
         amount.setValue(String.valueOf(randomSum));
-        if ((Objects.requireNonNull(to.getAttribute("value"))).contains("0001")) {
-            from.setValue(DataHelper.getSecondCard().getCardNumber());
-        } else
-            from.setValue(DataHelper.getFirstCard().getCardNumber());
+        from.setValue(cardNumber);
         transferButton.click();
         return new DashboardPage();
     }
 
     private final SelenideElement errorNotification = $("[data-test-id='error-notification']");
 
-    public SelenideElement InvalidFromCardNumber(int randomSum) {
-        amount.setValue(String.valueOf(randomSum));
-        from.setValue(DataHelper.getInvalidCard().getCardNumber());
-        transferButton.click();
-        return errorNotification.shouldBe(Condition.visible);
+    public TransferPage errorMessage(){
+        errorNotification.shouldBe(Condition.visible);
+        return new TransferPage();
     }
 }
