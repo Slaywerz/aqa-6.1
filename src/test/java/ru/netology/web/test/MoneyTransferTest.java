@@ -120,22 +120,21 @@ class MoneyTransferTest {
     }
 
 
-//    @Test
-//    @DisplayName("Transfer don't success because sum more than balance in card")
-//    void shouldDoNotDoneTransferWithInvalidSum() {
-//        var loginPage = new LoginPageV2();
-//        var authInfo = DataHelper.getAuthInfo();
-//        var verificationPage = loginPage.validLogin(authInfo);
-//        var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
-//        var dashboardPage = verificationPage.validVerify(verificationCode);
-//        var firstCardBalance = dashboardPage.getCardBalance(DataHelper.getFirstCard());
-//        var secondCardBalance = dashboardPage.getCardBalance(DataHelper.getSecondCard());
-//        dashboardPage.FirstCardTransfer();
-//        var transferPage = new TransferPage();
-//        var transferSum = DataHelper.getSumMoreThanBalance(secondCardBalance);
-//        var topUpFirstCard = transferPage.transfer(transferSum, DataHelper.getSecondCard().getCardNumber());
-//        transferPage.errorMessage();
-//    }
-
+    @Test
+    @DisplayName("Transfer don't success because sum more than balance in card")
+    void shouldDoNotDoneTransferWithInvalidSum() {
+        var loginPage = new LoginPageV2();
+        var authInfo = DataHelper.getAuthInfo();
+        var verificationPage = loginPage.validLogin(authInfo);
+        var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
+        var dashboardPage = verificationPage.validVerify(verificationCode);
+        var firstCardBalance = dashboardPage.getCardBalance(DataHelper.getFirstCard());
+        var secondCardBalance = dashboardPage.getCardBalance(DataHelper.getSecondCard());
+        dashboardPage.FirstCardTransfer();
+        var transferPage = new TransferPage();
+        var transferSum = DataHelper.getSumMoreThanBalance(secondCardBalance);
+        var topUpFirstCard = transferPage.transfer(transferSum, DataHelper.getSecondCard().getCardNumber());
+        transferPage.errorMessage();
+    }
 }
 
