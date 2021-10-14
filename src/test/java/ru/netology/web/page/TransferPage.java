@@ -27,7 +27,7 @@ public class TransferPage {
 
     private final SelenideElement errorNotification = $("[data-test-id='error-notification']");
 
-    public TransferPage errorMessage(){
+    public TransferPage errorMessage() {
         errorNotification.shouldBe(Condition.visible);
         return new TransferPage();
     }

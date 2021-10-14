@@ -1,8 +1,10 @@
 package ru.netology.web.test;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import ru.netology.web.data.DataHelper;
-import ru.netology.web.page.DashboardPage;
 import ru.netology.web.page.LoginPageV2;
 import ru.netology.web.page.TransferPage;
 
@@ -63,7 +65,7 @@ class MoneyTransferTest {
         dashboardPage.SecondCardTransfer();
         var transferPage = new TransferPage();
         var transferSum = DataHelper.getValidSum(firstCardBalance);
-        var topUpSecondCard = transferPage.transfer(firstCardBalance, DataHelper.getFirstCard().getCardNumber());
+        var topUpSecondCard = transferPage.transfer(transferSum, DataHelper.getFirstCard().getCardNumber());
         var expectedFirstCardBalance = firstCardBalance - transferSum;
         var expectedSecondCardBalance = secondCardBalance + transferSum;
         var actualFirstCardBalance = dashboardPage.getCardBalance(DataHelper.getFirstCard());
